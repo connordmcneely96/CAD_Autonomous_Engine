@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Sparkles, Send, Loader2, AlertCircle, RefreshCw, X } from 'lucide-react';
+import { Sparkles, Send, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import { sendCommand, getExamples, AICommandResponse, AIServiceError } from '@/lib/ai-client';
 import { toast } from 'sonner';
 
@@ -29,7 +29,7 @@ const SUGGESTED_COMMANDS = [
   'Create a NEMA 23 motor mount',
 ];
 
-export function AIChat({ projectId, onCommandExecuted, onClose }: AIChatProps) {
+export function AIChat({ projectId, onCommandExecuted }: AIChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);

@@ -15,7 +15,6 @@ import { useProjectsStore } from '@/stores/projects-store';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 import { AICommandResponse } from '@/lib/ai-client';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
 
 function CADEditorContent() {
   const params = useParams();
