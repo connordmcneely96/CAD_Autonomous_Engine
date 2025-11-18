@@ -5,6 +5,7 @@ import { config } from './config.js';
 import { healthRoutes } from './routes/health.js';
 import { projectRoutes } from './routes/projects.js';
 import { cadRoutes } from './routes/cad.js';
+import { aiRoutes } from './routes/ai.js';
 import { handleError } from './utils/errors.js';
 
 const fastify = Fastify({
@@ -44,6 +45,7 @@ fastify.setErrorHandler((error, request, reply) => {
 await fastify.register(healthRoutes);
 await fastify.register(projectRoutes, { prefix: '/api/projects' });
 await fastify.register(cadRoutes, { prefix: '/api/cad' });
+await fastify.register(aiRoutes, { prefix: '/api/ai' });
 
 // Root route
 fastify.get('/', async () => {
@@ -56,6 +58,7 @@ fastify.get('/', async () => {
       health: '/health',
       projects: '/api/projects',
       cad: '/api/cad',
+      ai: '/api/ai',
     },
   };
 });
@@ -82,6 +85,7 @@ const start = async () => {
     fastify.log.info('  - Health Check: GET /health');
     fastify.log.info('  - Projects API: /api/projects');
     fastify.log.info('  - CAD Operations: /api/cad');
+    fastify.log.info('  - AI Commands: /api/ai');
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);
