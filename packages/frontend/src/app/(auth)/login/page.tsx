@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -11,9 +11,16 @@ import { toast } from 'sonner';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, isLoading } = useAuthStore();
+  const { login, isLoading, isAuthenticated } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push('/projects');
+    }
+  }, [isAuthenticated, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,7 +33,8 @@ export default function LoginPage() {
     try {
       await login(email, password);
       toast.success('Welcome back!');
-      router.push('/projects');
+      // Use window.location for hard navigation to ensure auth state is loaded
+      window.location.href = '/projects';
     } catch (error) {
       toast.error('Invalid credentials');
     }
@@ -39,7 +47,8 @@ export default function LoginPage() {
     try {
       await login('demo@example.com', 'demo123');
       toast.success('Welcome to the demo!');
-      router.push('/projects');
+      // Use window.location for hard navigation to ensure auth state is loaded
+      window.location.href = '/projects';
     } catch (error) {
       toast.error('Demo login failed');
     }
