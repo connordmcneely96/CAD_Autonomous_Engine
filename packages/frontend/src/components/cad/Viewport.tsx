@@ -1,41 +1,80 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Grid, PerspectiveCamera, Environment, Stats } from '@react-three/drei';
 import * as THREE from 'three';
+import { useCADStore, type CADFeature } from '@/stores/cad-store';
 
-// Sample CAD object - a simple bracket
-function SampleGeometry() {
+// Component to render a single CAD feature's geometry
+function FeatureMesh({ feature }: { feature: CADFeature }) {
+  const { selectedFeatureId, hoveredFeatureId } = useCADStore();
+
+  // Create BufferGeometry from feature geometry data
+  const geometry = useMemo(() => {
+    if (!feature.geometry) return null;
+
+    const geom = new THREE.BufferGeometry();
+
+    // Set vertices
+    const vertices = new Float32Array(feature.geometry.vertices);
+    geom.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+
+    // Set indices
+    const indices = new Uint16Array(feature.geometry.indices);
+    geom.setIndex(new THREE.BufferAttribute(indices, 1));
+
+    // Set normals
+    if (feature.geometry.normals && feature.geometry.normals.length > 0) {
+      const normals = new Float32Array(feature.geometry.normals);
+      geom.setAttribute('normal', new THREE.BufferAttribute(normals, 3));
+    } else {
+      geom.computeVertexNormals();
+    }
+
+    return geom;
+  }, [feature.geometry]);
+
+  if (!geometry || !feature.visible) return null;
+
+  const isSelected = selectedFeatureId === feature.id;
+  const isHovered = hoveredFeatureId === feature.id;
+
+  return (
+    <mesh
+      castShadow
+      receiveShadow
+      geometry={geometry}
+      userData={{ featureId: feature.id, featureName: feature.name }}
+    >
+      <meshStandardMaterial
+        color={isSelected ? "#10b981" : isHovered ? "#3b82f6" : "#6366f1"}
+        metalness={0.3}
+        roughness={0.4}
+        emissive={isSelected ? "#059669" : isHovered ? "#2563eb" : "#000000"}
+        emissiveIntensity={isSelected ? 0.2 : isHovered ? 0.1 : 0}
+      />
+    </mesh>
+  );
+}
+
+// Component to render all CAD features from the store
+function CADScene() {
+  const { features } = useCADStore();
+
+  // Filter features that have geometry
+  const geometryFeatures = features.filter(f => f.geometry && f.visible);
+
+  if (geometryFeatures.length === 0) {
+    // Show placeholder text when no geometry
+    return null;
+  }
+
   return (
     <group>
-      {/* Main body */}
-      <mesh castShadow receiveShadow position={[0, 2.5, 0]}>
-        <boxGeometry args={[8, 5, 2]} />
-        <meshStandardMaterial color="#6366f1" metalness={0.3} roughness={0.4} />
-      </mesh>
-
-      {/* Side support */}
-      <mesh castShadow receiveShadow position={[0, 2.5, 3]}>
-        <boxGeometry args={[8, 5, 2]} />
-        <meshStandardMaterial color="#6366f1" metalness={0.3} roughness={0.4} />
-      </mesh>
-
-      {/* Connecting piece */}
-      <mesh castShadow receiveShadow position={[0, 2.5, 1]}>
-        <boxGeometry args={[8, 5, 2]} />
-        <meshStandardMaterial color="#6366f1" metalness={0.3} roughness={0.4} />
-      </mesh>
-
-      {/* Mounting holes */}
-      <mesh castShadow position={[-3, 2.5, 3.2]}>
-        <cylinderGeometry args={[0.5, 0.5, 0.5, 32]} />
-        <meshStandardMaterial color="#1e293b" metalness={0.7} roughness={0.2} />
-      </mesh>
-      <mesh castShadow position={[3, 2.5, 3.2]}>
-        <cylinderGeometry args={[0.5, 0.5, 0.5, 32]} />
-        <meshStandardMaterial color="#1e293b" metalness={0.7} roughness={0.2} />
-      </mesh>
+      {geometryFeatures.map((feature) => (
+        <FeatureMesh key={feature.id} feature={feature} />
+      ))}
     </group>
   );
 }
@@ -127,8 +166,8 @@ export function Viewport({ showStats = process.env.NODE_ENV === 'development' }:
         {/* Axis helper */}
         <AxisHelper />
 
-        {/* Sample geometry */}
-        <SampleGeometry />
+        {/* CAD geometry from store */}
+        <CADScene />
 
         {/* Controls */}
         <OrbitControls

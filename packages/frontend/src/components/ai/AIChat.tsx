@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sparkles, Send, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
-import { sendCommand, getExamples, AICommandResponse, AIServiceError } from '@/lib/ai-client';
+import { AICommandResponse } from '@/lib/ai-client';
+import { mockCAD } from '@/lib/mock-cad';
 import { toast } from 'sonner';
 
 interface Message {
@@ -29,7 +30,7 @@ const SUGGESTED_COMMANDS = [
   'Create a NEMA 23 motor mount',
 ];
 
-export function AIChat({ projectId, onCommandExecuted }: AIChatProps) {
+export function AIChat({ projectId: _projectId, onCommandExecuted }: AIChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -37,13 +38,10 @@ export function AIChat({ projectId, onCommandExecuted }: AIChatProps) {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Load examples on mount
+  // Use default examples (no API call in mock mode)
   useEffect(() => {
-    getExamples()
-      .then((exs) => setExamples(exs.map((ex) => ex.command)))
-      .catch(() => {
-        // Use default suggested commands
-      });
+    // In mock mode, just use the default suggested commands
+    setExamples(SUGGESTED_COMMANDS);
   }, []);
 
   // Auto-scroll to bottom when messages change
@@ -73,8 +71,15 @@ export function AIChat({ projectId, onCommandExecuted }: AIChatProps) {
     setIsLoading(true);
 
     try {
-      // Send command to AI service
-      const response = await sendCommand(text, projectId);
+      // Use MOCK AI service
+      const mockResponse = await mockCAD.processAICommand(text);
+
+      // Convert mock response to AICommandResponse format
+      const response: AICommandResponse = {
+        success: mockResponse.success,
+        parsed_command: mockResponse.parsed_command,
+        message: mockResponse.success ? undefined : 'Command could not be parsed',
+      };
 
       // Add assistant response
       const assistantMessage: Message = {
@@ -107,7 +112,7 @@ export function AIChat({ projectId, onCommandExecuted }: AIChatProps) {
       const errorMessage: Message = {
         id: `error-${Date.now()}`,
         role: 'error',
-        content: error instanceof AIServiceError
+        content: error instanceof Error
           ? error.message
           : 'Failed to process command. Please try again.',
         timestamp: new Date(),
