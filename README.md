@@ -4,6 +4,7 @@ An AI-powered CAD SaaS platform with natural language processing capabilities fo
 
 ## 🚀 Quick Links
 
+- **[Database Setup](./docs/DATABASE_SETUP.md)** - Complete database configuration guide
 - **[Deployment Guide](./docs/DEPLOYMENT.md)** - How to deploy to production
 - **[Quick Deploy](./DEPLOYMENT_QUICK_START.md)** - Deploy in 15 minutes
 - **[Contributing](./CONTRIBUTING.md)** - Development guidelines
@@ -89,6 +90,26 @@ cp .env.example .env
 # From project root
 pnpm docker:up
 ```
+
+6. **Set up the database**
+
+```bash
+cd packages/backend
+
+# Generate Prisma Client
+pnpm db:generate
+
+# Push schema to database
+pnpm db:push
+
+# Seed with sample data
+pnpm db:seed
+
+# Test connection
+pnpm db:test
+```
+
+**📚 Full database setup guide:** See [docs/DATABASE_SETUP.md](./docs/DATABASE_SETUP.md)
 
 ## 🎯 Development
 
