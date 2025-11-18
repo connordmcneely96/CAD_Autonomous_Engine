@@ -1,11 +1,20 @@
 import { create } from 'zustand';
 
+export interface Geometry {
+  vertices: number[];
+  indices: number[];
+  normals: number[];
+  vertex_count: number;
+  triangle_count: number;
+}
+
 export interface CADFeature {
   id: string;
   type: 'sketch' | 'extrude' | 'cut' | 'fillet' | 'chamfer' | 'hole' | 'shell' | 'pattern';
   name: string;
   visible: boolean;
   parameters: Record<string, any>;
+  geometry?: Geometry; // 3D mesh data
   parentId?: string;
   children?: string[];
 }

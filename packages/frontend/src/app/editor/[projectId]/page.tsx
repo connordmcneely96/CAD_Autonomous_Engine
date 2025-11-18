@@ -14,6 +14,7 @@ import { useCADStore } from '@/stores/cad-store';
 import { useProjectsStore } from '@/stores/projects-store';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 import { AICommandResponse } from '@/lib/ai-client';
+import { mockCAD } from '@/lib/mock-cad';
 import { toast } from 'sonner';
 
 function CADEditorContent() {
@@ -33,30 +34,37 @@ function CADEditorContent() {
   const { addFeature, features, featureTreeWidth, setFeatureTreeWidth } = useCADStore();
 
   const handleToolbarAction = (action: string) => {
-    console.log('Toolbar action:', action);
-
-    // Handle primitive additions
+    // Handle primitive additions with MOCK GEOMETRY
     if (action === 'add-box') {
+      const boxData = mockCAD.createBox(50, 50, 50);
       addFeature({
         type: 'sketch',
-        name: `Box Sketch ${features.length + 1}`,
+        name: `Box ${features.filter(f => f.type === 'sketch').length + 1}`,
         visible: true,
-        parameters: { plane: 'XY', offset: 0, shape: 'rectangle' },
+        parameters: boxData.parameters,
+        geometry: boxData.geometry,
       });
+      toast.success('Box created', { description: '50×50×50mm' });
     } else if (action === 'add-cylinder') {
+      const cylinderData = mockCAD.createCylinder(20, 40);
       addFeature({
         type: 'sketch',
-        name: `Cylinder Sketch ${features.length + 1}`,
+        name: `Cylinder ${features.filter(f => f.type === 'sketch').length + 1}`,
         visible: true,
-        parameters: { plane: 'XY', offset: 0, shape: 'circle' },
+        parameters: cylinderData.parameters,
+        geometry: cylinderData.geometry,
       });
+      toast.success('Cylinder created', { description: 'Radius: 20mm, Height: 40mm' });
     } else if (action === 'add-sphere') {
+      const sphereData = mockCAD.createSphere(25);
       addFeature({
         type: 'sketch',
-        name: `Sphere Sketch ${features.length + 1}`,
+        name: `Sphere ${features.filter(f => f.type === 'sketch').length + 1}`,
         visible: true,
-        parameters: { plane: 'XY', offset: 0, shape: 'circle' },
+        parameters: sphereData.parameters,
+        geometry: sphereData.geometry,
       });
+      toast.success('Sphere created', { description: 'Radius: 25mm' });
     }
 
     // Handle operations
@@ -127,62 +135,60 @@ function CADEditorContent() {
     const { operation, geometry, parameters } = parsed_command;
 
     try {
-      // Execute mock operations based on AI response
+      // Execute mock operations with real geometry based on AI response
       if (operation === 'create') {
         switch (geometry) {
-          case 'box':
+          case 'box': {
+            const boxData = mockCAD.createBox(
+              parameters.width || 50,
+              parameters.height || 50,
+              parameters.depth || 50
+            );
             addFeature({
               type: 'sketch',
               name: `Box ${features.filter((f) => f.type === 'sketch').length + 1}`,
               visible: true,
-              parameters: {
-                plane: 'XY',
-                offset: 0,
-                shape: 'rectangle',
-                width: parameters.width || 50,
-                height: parameters.height || 50,
-                depth: parameters.depth || 50,
-              },
+              parameters: boxData.parameters,
+              geometry: boxData.geometry,
             });
             toast.success('Box created', {
-              description: `${parameters.width}×${parameters.height}×${parameters.depth}mm`,
+              description: `${parameters.width || 50}×${parameters.height || 50}×${parameters.depth || 50}mm`,
             });
             break;
+          }
 
-          case 'cylinder':
+          case 'cylinder': {
+            const cylinderData = mockCAD.createCylinder(
+              parameters.radius || 10,
+              parameters.height || 20
+            );
             addFeature({
               type: 'sketch',
               name: `Cylinder ${features.filter((f) => f.type === 'sketch').length + 1}`,
               visible: true,
-              parameters: {
-                plane: 'XY',
-                offset: 0,
-                shape: 'circle',
-                radius: parameters.radius || 10,
-                height: parameters.height || 20,
-              },
+              parameters: cylinderData.parameters,
+              geometry: cylinderData.geometry,
             });
             toast.success('Cylinder created', {
-              description: `Radius: ${parameters.radius}mm, Height: ${parameters.height}mm`,
+              description: `Radius: ${parameters.radius || 10}mm, Height: ${parameters.height || 20}mm`,
             });
             break;
+          }
 
-          case 'sphere':
+          case 'sphere': {
+            const sphereData = mockCAD.createSphere(parameters.radius || 10);
             addFeature({
               type: 'sketch',
               name: `Sphere ${features.filter((f) => f.type === 'sketch').length + 1}`,
               visible: true,
-              parameters: {
-                plane: 'XY',
-                offset: 0,
-                shape: 'circle',
-                radius: parameters.radius || 10,
-              },
+              parameters: sphereData.parameters,
+              geometry: sphereData.geometry,
             });
             toast.success('Sphere created', {
-              description: `Radius: ${parameters.radius}mm`,
+              description: `Radius: ${parameters.radius || 10}mm`,
             });
             break;
+          }
 
           case 'hole':
             addFeature({
