@@ -3,6 +3,9 @@ import cors from '@fastify/cors';
 import rateLimit from '@fastify/rate-limit';
 import { config } from './config.js';
 import { healthRoutes } from './routes/health.js';
+import { projectRoutes } from './routes/projects.js';
+import { cadRoutes } from './routes/cad.js';
+import { handleError } from './utils/errors.js';
 
 const fastify = Fastify({
   logger: {
@@ -31,16 +34,40 @@ await fastify.register(rateLimit, {
   timeWindow: config.rateLimit.timeWindow,
 });
 
+// Global error handler
+fastify.setErrorHandler((error, request, reply) => {
+  request.log.error(error);
+  handleError(error, reply);
+});
+
 // Register routes
 await fastify.register(healthRoutes);
+await fastify.register(projectRoutes, { prefix: '/api/projects' });
+await fastify.register(cadRoutes, { prefix: '/api/cad' });
 
 // Root route
 fastify.get('/', async () => {
   return {
-    message: 'CAD Autonomous Engine - Backend API',
+    name: 'CAD Autonomous Engine - Backend API',
     version: '0.1.0',
+    status: 'operational',
     timestamp: new Date().toISOString(),
+    endpoints: {
+      health: '/health',
+      projects: '/api/projects',
+      cad: '/api/cad',
+    },
   };
+});
+
+// Graceful shutdown
+const signals = ['SIGINT', 'SIGTERM'];
+signals.forEach((signal) => {
+  process.on(signal, async () => {
+    fastify.log.info(`Received ${signal}, starting graceful shutdown...`);
+    await fastify.close();
+    process.exit(0);
+  });
 });
 
 // Start server
@@ -51,6 +78,10 @@ const start = async () => {
       host: config.host,
     });
     fastify.log.info(`Server is running on http://${config.host}:${config.port}`);
+    fastify.log.info('API Documentation:');
+    fastify.log.info('  - Health Check: GET /health');
+    fastify.log.info('  - Projects API: /api/projects');
+    fastify.log.info('  - CAD Operations: /api/cad');
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);
