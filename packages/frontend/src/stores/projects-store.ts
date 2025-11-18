@@ -6,7 +6,9 @@ export interface Project {
   name: string;
   description?: string;
   thumbnail?: string;
+  thumbnailUrl?: string;
   userId: string;
+  isPublic: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -30,8 +32,10 @@ const INITIAL_PROJECTS: Project[] = [
     id: '1',
     name: 'Sample Bracket',
     description: 'A simple mounting bracket for demonstration',
-    thumbnail: null,
+    thumbnail: undefined,
+    thumbnailUrl: undefined,
     userId: 'demo-user',
+    isPublic: true,
     createdAt: new Date('2024-01-15'),
     updatedAt: new Date('2024-01-15'),
   },
@@ -39,8 +43,10 @@ const INITIAL_PROJECTS: Project[] = [
     id: '2',
     name: 'Motor Mount',
     description: 'NEMA 23 stepper motor mount',
-    thumbnail: null,
+    thumbnail: undefined,
+    thumbnailUrl: undefined,
     userId: 'demo-user',
+    isPublic: false,
     createdAt: new Date('2024-01-20'),
     updatedAt: new Date('2024-01-20'),
   },
@@ -48,8 +54,10 @@ const INITIAL_PROJECTS: Project[] = [
     id: '3',
     name: 'Custom Enclosure',
     description: 'Electronics enclosure with ventilation',
-    thumbnail: null,
+    thumbnail: undefined,
+    thumbnailUrl: undefined,
     userId: 'demo-user',
+    isPublic: true,
     createdAt: new Date('2024-02-01'),
     updatedAt: new Date('2024-02-01'),
   },
@@ -74,8 +82,10 @@ export const useProjectsStore = create<ProjectsState>()(
           id: 'proj-' + Math.random().toString(36).substr(2, 9),
           name,
           description,
-          thumbnail: null,
+          thumbnail: undefined,
+          thumbnailUrl: undefined,
           userId,
+          isPublic: false,
           createdAt: new Date(),
           updatedAt: new Date(),
         };

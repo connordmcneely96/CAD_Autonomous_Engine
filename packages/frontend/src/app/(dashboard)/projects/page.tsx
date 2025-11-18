@@ -144,7 +144,13 @@ function ProjectsPageContent() {
           }
         >
           {filteredProjects.map((project) => (
-            <ProjectCard key={project.id} project={project} />
+            <ProjectCard
+              key={project.id}
+              project={{
+                ...project,
+                updatedAt: project.updatedAt.toISOString(),
+              }}
+            />
           ))}
         </div>
       )}
