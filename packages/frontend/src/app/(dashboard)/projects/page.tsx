@@ -1,66 +1,77 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { ProjectCard } from '@/components/dashboard/ProjectCard';
 import { Plus, Search, Grid, List } from 'lucide-react';
+import { useAuthStore } from '@/stores/auth-store';
+import { useProjectsStore } from '@/stores/projects-store';
+import { AuthGuard } from '@/components/auth/AuthGuard';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { toast } from 'sonner';
 
-// Mock data - replace with real API call later
-const mockProjects = [
-  {
-    id: '1',
-    name: 'Bracket Design',
-    description: 'Simple L-bracket with mounting holes for structural support',
-    thumbnailUrl: '',
-    updatedAt: new Date().toISOString(),
-    isPublic: true,
-  },
-  {
-    id: '2',
-    name: 'Mechanical Gear',
-    description: 'Parametric gear design with customizable teeth and module',
-    thumbnailUrl: '',
-    updatedAt: new Date(Date.now() - 86400000).toISOString(),
-    isPublic: false,
-  },
-  {
-    id: '3',
-    name: 'Housing Component',
-    description: 'Custom housing for electronic components with ventilation',
-    thumbnailUrl: '',
-    updatedAt: new Date(Date.now() - 172800000).toISOString(),
-    isPublic: true,
-  },
-  {
-    id: '4',
-    name: 'Shaft Coupling',
-    description: 'Flexible coupling for shaft connections',
-    thumbnailUrl: '',
-    updatedAt: new Date(Date.now() - 259200000).toISOString(),
-    isPublic: false,
-  },
-];
-
-export default function ProjectsPage() {
+function ProjectsPageContent() {
+  const router = useRouter();
+  const { user } = useAuthStore();
+  const { getProjects, createProject } = useProjectsStore();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [newProjectName, setNewProjectName] = useState('');
+  const [newProjectDescription, setNewProjectDescription] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
 
-  const filteredProjects = mockProjects.filter((project) =>
+  const allProjects = getProjects(user?.id || 'demo-user');
+  const filteredProjects = allProjects.filter((project) =>
     project.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleCreateProject = async () => {
+    if (!newProjectName.trim()) {
+      toast.error('Please enter a project name');
+      return;
+    }
+
+    setIsCreating(true);
+    try {
+      const project = createProject(
+        newProjectName,
+        newProjectDescription,
+        user?.id || 'demo-user'
+      );
+      toast.success('Project created successfully!');
+      setIsCreateDialogOpen(false);
+      setNewProjectName('');
+      setNewProjectDescription('');
+      router.push(`/editor/${project.id}`);
+    } catch (error) {
+      toast.error('Failed to create project');
+    } finally {
+      setIsCreating(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Projects</h1>
+          <h1 className="text-3xl font-bold">Welcome, {user?.name || 'User'}!</h1>
           <p className="text-muted-foreground mt-1">
             Manage and organize your CAD projects
           </p>
         </div>
-        <Button className="gap-2">
+        <Button className="gap-2" onClick={() => setIsCreateDialogOpen(true)}>
           <Plus className="h-4 w-4" />
           New Project
         </Button>
@@ -119,7 +130,7 @@ export default function ProjectsPage() {
               ? 'Try adjusting your search'
               : 'Get started by creating your first project'}
           </p>
-          <Button>
+          <Button onClick={() => setIsCreateDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Create Project
           </Button>
@@ -137,6 +148,64 @@ export default function ProjectsPage() {
           ))}
         </div>
       )}
+
+      {/* Create Project Dialog */}
+      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create New Project</DialogTitle>
+            <DialogDescription>
+              Give your new CAD project a name and description to get started.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="project-name">Project Name</Label>
+              <Input
+                id="project-name"
+                placeholder="My Awesome Design"
+                value={newProjectName}
+                onChange={(e) => setNewProjectName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleCreateProject();
+                  }
+                }}
+                autoFocus
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="project-description">Description (Optional)</Label>
+              <Input
+                id="project-description"
+                placeholder="Brief description of your project"
+                value={newProjectDescription}
+                onChange={(e) => setNewProjectDescription(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsCreateDialogOpen(false)}
+              disabled={isCreating}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleCreateProject} disabled={isCreating}>
+              {isCreating ? 'Creating...' : 'Create Project'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
+  );
+}
+
+export default function ProjectsPage() {
+  return (
+    <AuthGuard>
+      <ProjectsPageContent />
+    </AuthGuard>
   );
 }

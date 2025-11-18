@@ -26,7 +26,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
   return (
     <Card className="group hover:shadow-lg transition-all duration-200 hover:scale-[1.02]">
       <CardHeader className="p-0">
-        <Link href={`/projects/${project.id}`}>
+        <Link href={`/editor/${project.id}`}>
           <div className="relative w-full h-48 bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 dark:from-blue-900 dark:via-purple-900 dark:to-pink-900 rounded-t-lg overflow-hidden">
             {project.thumbnailUrl ? (
               <img
@@ -66,7 +66,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
         </Link>
       </CardHeader>
       <CardContent className="p-4">
-        <Link href={`/projects/${project.id}`}>
+        <Link href={`/editor/${project.id}`}>
           <h3 className="font-semibold text-lg mb-1 group-hover:text-primary transition-colors">
             {project.name}
           </h3>
