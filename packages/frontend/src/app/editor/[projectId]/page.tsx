@@ -7,13 +7,14 @@ import { Toolbar } from '@/components/cad/Toolbar';
 import { FeatureTree } from '@/components/cad/FeatureTree';
 import { Viewport } from '@/components/cad/Viewport';
 import { PropertiesPanel } from '@/components/cad/PropertiesPanel';
+import { AIChat } from '@/components/ai/AIChat';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Input } from '@/components/ui/input';
-import { ChevronLeft, ChevronRight, Send, Sparkles, ArrowLeft } from 'lucide-react';
+import { ChevronLeft, Sparkles, ArrowLeft } from 'lucide-react';
 import { useCADStore } from '@/stores/cad-store';
 import { useProjectsStore } from '@/stores/projects-store';
 import { AuthGuard } from '@/components/auth/AuthGuard';
+import { AICommandResponse } from '@/lib/ai-client';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
 function CADEditorContent() {
@@ -30,14 +31,6 @@ function CADEditorContent() {
   }, [project, router]);
 
   const [aiSidebarOpen, setAiSidebarOpen] = useState(true);
-  const [aiInput, setAiInput] = useState('');
-  const [aiMessages, setAiMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([
-    {
-      role: 'assistant',
-      content: 'Hello! I\'m your AI CAD assistant. I can help you create and modify 3D models using natural language. Try asking me to "create a box" or "add a cylinder".',
-    },
-  ]);
-
   const { addFeature, features, featureTreeWidth, setFeatureTreeWidth } = useCADStore();
 
   const handleToolbarAction = (action: string) => {
@@ -124,21 +117,156 @@ function CADEditorContent() {
     }
   };
 
-  const handleAiSubmit = () => {
-    if (!aiInput.trim()) return;
+  /**
+   * Handle AI command execution
+   * Creates mock CAD features based on AI parsed commands
+   */
+  const handleAICommand = (response: AICommandResponse) => {
+    if (!response.success) return;
 
-    // Add user message
-    const newMessages = [
-      ...aiMessages,
-      { role: 'user' as const, content: aiInput },
-      {
-        role: 'assistant' as const,
-        content: 'I understand your request. In a production environment, I would process your natural language command and create the appropriate CAD features. This is a demo response.',
-      },
-    ];
+    const { parsed_command } = response;
+    const { operation, geometry, parameters } = parsed_command;
 
-    setAiMessages(newMessages);
-    setAiInput('');
+    try {
+      // Execute mock operations based on AI response
+      if (operation === 'create') {
+        switch (geometry) {
+          case 'box':
+            addFeature({
+              type: 'sketch',
+              name: `Box ${features.filter((f) => f.type === 'sketch').length + 1}`,
+              visible: true,
+              parameters: {
+                plane: 'XY',
+                offset: 0,
+                shape: 'rectangle',
+                width: parameters.width || 50,
+                height: parameters.height || 50,
+                depth: parameters.depth || 50,
+              },
+            });
+            toast.success('Box created', {
+              description: `${parameters.width}×${parameters.height}×${parameters.depth}mm`,
+            });
+            break;
+
+          case 'cylinder':
+            addFeature({
+              type: 'sketch',
+              name: `Cylinder ${features.filter((f) => f.type === 'sketch').length + 1}`,
+              visible: true,
+              parameters: {
+                plane: 'XY',
+                offset: 0,
+                shape: 'circle',
+                radius: parameters.radius || 10,
+                height: parameters.height || 20,
+              },
+            });
+            toast.success('Cylinder created', {
+              description: `Radius: ${parameters.radius}mm, Height: ${parameters.height}mm`,
+            });
+            break;
+
+          case 'sphere':
+            addFeature({
+              type: 'sketch',
+              name: `Sphere ${features.filter((f) => f.type === 'sketch').length + 1}`,
+              visible: true,
+              parameters: {
+                plane: 'XY',
+                offset: 0,
+                shape: 'circle',
+                radius: parameters.radius || 10,
+              },
+            });
+            toast.success('Sphere created', {
+              description: `Radius: ${parameters.radius}mm`,
+            });
+            break;
+
+          case 'hole':
+            addFeature({
+              type: 'cut',
+              name: `Hole ${features.filter((f) => f.type === 'cut').length + 1}`,
+              visible: true,
+              parameters: {
+                radius: parameters.radius || 5,
+                depth: parameters.depth || 10,
+                cutType: 'through',
+              },
+            });
+            toast.success('Hole created', {
+              description: `${parameters.radius}mm radius, ${parameters.depth}mm deep`,
+            });
+            break;
+
+          case 'extrude':
+            addFeature({
+              type: 'extrude',
+              name: `Extrude ${features.filter((f) => f.type === 'extrude').length + 1}`,
+              visible: true,
+              parameters: {
+                distance: parameters.distance || 10,
+                direction: parameters.direction || 'normal',
+              },
+            });
+            toast.success('Extrude created', {
+              description: `Distance: ${parameters.distance}mm`,
+            });
+            break;
+
+          default:
+            toast.info('Feature recognized', {
+              description: `${geometry} operation ready to execute`,
+            });
+        }
+      } else if (operation === 'modify') {
+        switch (geometry) {
+          case 'fillet':
+            addFeature({
+              type: 'fillet',
+              name: `Fillet ${features.filter((f) => f.type === 'fillet').length + 1}`,
+              visible: true,
+              parameters: {
+                radius: parameters.radius || 2,
+                edgeCount: parameters.edgeIds?.length || 0,
+              },
+            });
+            toast.success('Fillet added', {
+              description: `Radius: ${parameters.radius}mm`,
+            });
+            break;
+
+          case 'chamfer':
+            addFeature({
+              type: 'chamfer',
+              name: `Chamfer ${features.filter((f) => f.type === 'chamfer').length + 1}`,
+              visible: true,
+              parameters: {
+                distance: parameters.distance || 1,
+                angle: parameters.angle || 45,
+              },
+            });
+            toast.success('Chamfer added', {
+              description: `${parameters.distance}mm at ${parameters.angle}°`,
+            });
+            break;
+
+          default:
+            toast.info('Modification ready', {
+              description: `${geometry} operation prepared`,
+            });
+        }
+      } else if (operation === 'delete') {
+        toast.info('Delete operation', {
+          description: 'Select features to delete',
+        });
+      }
+    } catch (error) {
+      console.error('Error executing AI command:', error);
+      toast.error('Failed to execute command');
+    }
   };
 
   if (!project) {
@@ -208,86 +336,24 @@ function CADEditorContent() {
         </div>
 
         {/* AI Chat Sidebar */}
-        <div
-          className={cn(
-            'border-l border-gray-700 bg-slate-900 transition-all duration-300 flex flex-col',
-            aiSidebarOpen ? 'w-80' : 'w-0'
-          )}
-        >
-          {aiSidebarOpen && (
-            <>
-              {/* AI Header */}
-              <div className="h-12 border-b border-gray-700 flex items-center justify-between px-4 bg-slate-800">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-indigo-400" />
-                  <h3 className="text-sm font-semibold">AI Assistant</h3>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 p-0"
-                  onClick={() => setAiSidebarOpen(false)}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-
-              {/* AI Messages */}
-              <ScrollArea className="flex-1 p-4">
-                <div className="space-y-4">
-                  {aiMessages.map((message, index) => (
-                    <div
-                      key={index}
-                      className={cn(
-                        'p-3 rounded-lg text-sm',
-                        message.role === 'user'
-                          ? 'bg-indigo-600 ml-4'
-                          : 'bg-slate-800 mr-4'
-                      )}
-                    >
-                      {message.content}
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
-
-              {/* AI Input */}
-              <div className="p-4 border-t border-gray-700">
-                <div className="flex gap-2">
-                  <Input
-                    value={aiInput}
-                    onChange={(e) => setAiInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        handleAiSubmit();
-                      }
-                    }}
-                    placeholder="Ask AI to create features..."
-                    className="flex-1"
-                  />
-                  <Button size="sm" onClick={handleAiSubmit}>
-                    <Send className="h-4 w-4" />
-                  </Button>
-                </div>
-                <div className="mt-2 text-xs text-gray-500">
-                  Try: "Create a 10mm box" or "Add a fillet to the edges"
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* AI Sidebar Toggle (when closed) */}
-        {!aiSidebarOpen && (
-          <div className="border-l border-gray-700">
+        {aiSidebarOpen ? (
+          <div className="w-80 flex-shrink-0">
+            <AIChat projectId={projectId} onCommandExecuted={handleAICommand} />
+          </div>
+        ) : (
+          <div className="border-l border-gray-700 flex-shrink-0">
             <Button
               variant="ghost"
               size="sm"
-              className="h-12 w-8 rounded-none"
+              className="h-full w-10 rounded-none flex flex-col gap-2 py-4"
               onClick={() => setAiSidebarOpen(true)}
+              title="Open AI Assistant"
             >
               <ChevronLeft className="h-4 w-4" />
+              <div className="writing-vertical text-xs text-gray-400 rotate-180" style={{ writingMode: 'vertical-rl' }}>
+                AI Assistant
+              </div>
+              <Sparkles className="h-4 w-4 text-purple-400" />
             </Button>
           </div>
         )}
