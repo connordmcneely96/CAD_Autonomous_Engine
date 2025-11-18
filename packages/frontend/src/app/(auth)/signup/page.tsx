@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -11,11 +11,18 @@ import { toast } from 'sonner';
 
 export default function SignupPage() {
   const router = useRouter();
-  const { signup, isLoading } = useAuthStore();
+  const { signup, isLoading, isAuthenticated } = useAuthStore();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push('/projects');
+    }
+  }, [isAuthenticated, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,7 +45,8 @@ export default function SignupPage() {
     try {
       await signup(email, password, name);
       toast.success('Account created successfully!');
-      router.push('/projects');
+      // Use window.location for hard navigation to ensure auth state is loaded
+      window.location.href = '/projects';
     } catch (error) {
       toast.error('Failed to create account');
     }
