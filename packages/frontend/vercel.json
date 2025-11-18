@@ -1,8 +1,7 @@
 {
-  "buildCommand": "cd ../.. && pnpm install && pnpm --filter @cad-engine/frontend build",
-  "outputDirectory": "packages/frontend/.next",
-  "devCommand": "cd packages/frontend && pnpm dev",
-  "installCommand": "pnpm install",
+  "buildCommand": "pnpm build",
+  "outputDirectory": ".next",
+  "installCommand": "cd ../.. && pnpm install --filter @cad-engine/frontend... --ignore-scripts && cd packages/frontend",
   "framework": "nextjs",
   "rewrites": [
     {
