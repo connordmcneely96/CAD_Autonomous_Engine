@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MoreVertical, Eye, Edit, Trash2 } from 'lucide-react';
+import { Eye, Edit, Trash2 } from 'lucide-react';
 
 interface ProjectCardProps {
   project: {
