@@ -21,8 +21,6 @@ export function PropertiesPanel() {
   const {
     features,
     selectedFeatureId,
-    propertiesPanelOpen,
-    setPropertiesPanelOpen,
     updateFeature,
     selectFeature,
   } = useCADStore();
@@ -62,7 +60,7 @@ export function PropertiesPanel() {
     selectFeature(null);
   };
 
-  if (!propertiesPanelOpen && !selectedFeature) {
+  if (!selectedFeature) {
     return null;
   }
 

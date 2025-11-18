@@ -1,7 +1,8 @@
 'use client';
 
-import { useParams } from 'next/navigation';
-import { useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Toolbar } from '@/components/cad/Toolbar';
 import { FeatureTree } from '@/components/cad/FeatureTree';
 import { Viewport } from '@/components/cad/Viewport';
@@ -9,13 +10,24 @@ import { PropertiesPanel } from '@/components/cad/PropertiesPanel';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
-import { ChevronLeft, ChevronRight, Send, Sparkles } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Send, Sparkles, ArrowLeft } from 'lucide-react';
 import { useCADStore } from '@/stores/cad-store';
+import { useProjectsStore } from '@/stores/projects-store';
+import { AuthGuard } from '@/components/auth/AuthGuard';
 import { cn } from '@/lib/utils';
 
-export default function CADEditorPage() {
+function CADEditorContent() {
   const params = useParams();
+  const router = useRouter();
   const projectId = params.projectId as string;
+  const { getProject } = useProjectsStore();
+  const project = getProject(projectId);
+
+  useEffect(() => {
+    if (!project) {
+      router.push('/projects');
+    }
+  }, [project, router]);
 
   const [aiSidebarOpen, setAiSidebarOpen] = useState(true);
   const [aiInput, setAiInput] = useState('');
@@ -129,8 +141,27 @@ export default function CADEditorPage() {
     setAiInput('');
   };
 
+  if (!project) {
+    return null;
+  }
+
   return (
     <div className="h-screen flex flex-col bg-slate-900 text-white">
+      {/* Project Header */}
+      <div className="h-12 border-b border-gray-700 bg-slate-950 flex items-center px-4 gap-4">
+        <Link href="/projects">
+          <Button variant="ghost" size="sm" className="h-8 gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            Projects
+          </Button>
+        </Link>
+        <div className="h-4 w-px bg-gray-700" />
+        <h1 className="text-sm font-semibold">{project.name}</h1>
+        {project.description && (
+          <span className="text-sm text-gray-500">· {project.description}</span>
+        )}
+      </div>
+
       {/* Toolbar */}
       <Toolbar onAction={handleToolbarAction} />
 
@@ -262,5 +293,13 @@ export default function CADEditorPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function CADEditorPage() {
+  return (
+    <AuthGuard>
+      <CADEditorContent />
+    </AuthGuard>
   );
 }
