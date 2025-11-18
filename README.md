@@ -2,6 +2,13 @@
 
 An AI-powered CAD SaaS platform with natural language processing capabilities for automated CAD operations.
 
+## 🚀 Quick Links
+
+- **[Deployment Guide](./docs/DEPLOYMENT.md)** - How to deploy to production
+- **[Quick Deploy](./DEPLOYMENT_QUICK_START.md)** - Deploy in 15 minutes
+- **[Contributing](./CONTRIBUTING.md)** - Development guidelines
+- **[AI Assistant Guide](./CLAUDE.md)** - For AI assistants working on this project
+
 ## 🏗️ Project Structure
 
 This is a monorepo managed with pnpm workspaces, containing:
@@ -246,6 +253,49 @@ Build specific package:
 pnpm build:frontend
 pnpm build:backend
 ```
+
+## 🚀 Deployment
+
+### Production Deployment Strategy
+
+Each service should be deployed to different platforms:
+
+| Service | Platform | URL Pattern |
+|---------|----------|-------------|
+| **Frontend** (Next.js) | Vercel ✅ | `https://your-app.vercel.app` |
+| **Backend** (Fastify) | Railway/Render | `https://your-backend.railway.app` |
+| **CAD Engine** (Python) | Railway/Render | `https://your-cad-engine.railway.app` |
+| **AI Service** (Python) | Railway/Render | `https://your-ai-service.railway.app` |
+| **Database** | Railway/Supabase | Auto-configured |
+
+### Quick Deploy (15 minutes)
+
+1. **Frontend → Vercel**
+   - Import GitHub repo at [vercel.com](https://vercel.com)
+   - Root directory: `packages/frontend`
+   - Add environment variables
+   - Deploy
+
+2. **Backend → Railway**
+   - New project at [railway.app](https://railway.app)
+   - Root directory: `packages/backend`
+   - Add PostgreSQL + Redis services
+   - Deploy
+
+3. **Python Services → Railway**
+   - Same Railway project
+   - Deploy CAD Engine and AI Service separately
+   - Add API keys in environment variables
+
+**📚 Full Documentation:**
+- **[Complete Deployment Guide](./docs/DEPLOYMENT.md)** - Detailed instructions
+- **[Quick Start Guide](./DEPLOYMENT_QUICK_START.md)** - 15-minute setup
+
+### ⚠️ Important: Don't Deploy Fastify to Vercel
+
+**Backend (Fastify) requires a persistent server** and won't work properly on Vercel's serverless platform. Use Railway, Render, or Fly.io instead.
+
+Only deploy the **Frontend (Next.js)** to Vercel.
 
 ## 🔍 Health Checks
 
