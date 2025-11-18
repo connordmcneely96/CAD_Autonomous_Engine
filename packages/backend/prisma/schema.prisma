@@ -1,0 +1,148 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum ProjectRole {
+  OWNER
+  EDITOR
+  VIEWER
+}
+
+enum FEAJobStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+// Models
+
+model User {
+  id         String   @id @default(cuid())
+  email      String   @unique
+  name       String?
+  avatarUrl  String?  @map("avatar_url")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  projects       Project[]
+  projectShares  ProjectShare[]
+  comments       Comment[]
+  versions       Version[]
+  feaJobs        FEAJob[]
+
+  @@map("users")
+}
+
+model Project {
+  id             String   @id @default(cuid())
+  userId         String   @map("user_id")
+  name           String
+  description    String?
+  thumbnailUrl   String?  @map("thumbnail_url")
+  featureTree    Json?    @map("feature_tree")
+  currentVersion Int      @default(1) @map("current_version")
+  isPublic       Boolean  @default(false) @map("is_public")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  versions      Version[]
+  comments      Comment[]
+  projectShares ProjectShare[]
+  feaJobs       FEAJob[]
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([isPublic])
+  @@map("projects")
+}
+
+model Version {
+  id              String   @id @default(cuid())
+  projectId       String   @map("project_id")
+  versionNumber   Int      @map("version_number")
+  featureTree     Json     @map("feature_tree")
+  geometryFileUrl String?  @map("geometry_file_url")
+  thumbnailUrl    String?  @map("thumbnail_url")
+  message         String?
+  createdAt       DateTime @default(now()) @map("created_at")
+  createdBy       String   @map("created_by")
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, versionNumber])
+  @@index([projectId])
+  @@index([createdAt])
+  @@map("versions")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  projectId String   @map("project_id")
+  userId    String   @map("user_id")
+  featureId String?  @map("feature_id")
+  text      String
+  resolved  Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([userId])
+  @@index([resolved])
+  @@map("comments")
+}
+
+model ProjectShare {
+  id        String      @id @default(cuid())
+  projectId String      @map("project_id")
+  userId    String      @map("user_id")
+  role      ProjectRole
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@index([userId])
+  @@map("project_shares")
+}
+
+model FEAJob {
+  id          String       @id @default(cuid())
+  projectId   String       @map("project_id")
+  userId      String       @map("user_id")
+  status      FEAJobStatus @default(PENDING)
+  config      Json
+  results     Json?
+  createdAt   DateTime     @default(now()) @map("created_at")
+  completedAt DateTime?    @map("completed_at")
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("fea_jobs")
+}
