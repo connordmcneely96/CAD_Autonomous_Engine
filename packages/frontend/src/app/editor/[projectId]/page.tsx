@@ -8,10 +8,12 @@ import { FeatureTree } from '@/components/cad/FeatureTree';
 import { Viewport } from '@/components/cad/Viewport';
 import { PropertiesPanel } from '@/components/cad/PropertiesPanel';
 import { AIChat } from '@/components/ai/AIChat';
+import { BoxDialog, CylinderDialog, SphereDialog } from '@/components/cad/PrimitiveDialogs';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, Sparkles, ArrowLeft } from 'lucide-react';
 import { useCADStore } from '@/stores/cad-store';
 import { useProjectsStore } from '@/stores/projects-store';
+import { useCADOperations } from '@/hooks/useCADOperations';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 import { AICommandResponse } from '@/lib/ai-client';
 import { mockCAD } from '@/lib/mock-cad';
@@ -31,40 +33,62 @@ function CADEditorContent() {
   }, [project, router]);
 
   const [aiSidebarOpen, setAiSidebarOpen] = useState(true);
+  const [boxDialogOpen, setBoxDialogOpen] = useState(false);
+  const [cylinderDialogOpen, setCylinderDialogOpen] = useState(false);
+  const [sphereDialogOpen, setSphereDialogOpen] = useState(false);
+
   const { addFeature, features, featureTreeWidth, setFeatureTreeWidth } = useCADStore();
+  const { isLoading, createBox, createCylinder, createSphere } = useCADOperations();
+
+  // Environment variable to toggle between mock and real CAD
+  const useMockMode = process.env.NEXT_PUBLIC_USE_MOCK_CAD === 'true';
 
   const handleToolbarAction = (action: string) => {
-    // Handle primitive additions with MOCK GEOMETRY
+    // Handle primitive additions
     if (action === 'add-box') {
-      const boxData = mockCAD.createBox(50, 50, 50);
-      addFeature({
-        type: 'sketch',
-        name: `Box ${features.filter(f => f.type === 'sketch').length + 1}`,
-        visible: true,
-        parameters: boxData.parameters,
-        geometry: boxData.geometry,
-      });
-      toast.success('Box created', { description: '50×50×50mm' });
+      if (useMockMode) {
+        // Use mock CAD for development
+        const boxData = mockCAD.createBox(50, 50, 50);
+        addFeature({
+          type: 'sketch',
+          name: `Box ${features.filter(f => f.type === 'sketch').length + 1}`,
+          visible: true,
+          parameters: boxData.parameters,
+          geometry: boxData.geometry,
+        });
+        toast.success('Box created', { description: '50×50×50mm' });
+      } else {
+        // Use real CAD engine - open dialog
+        setBoxDialogOpen(true);
+      }
     } else if (action === 'add-cylinder') {
-      const cylinderData = mockCAD.createCylinder(20, 40);
-      addFeature({
-        type: 'sketch',
-        name: `Cylinder ${features.filter(f => f.type === 'sketch').length + 1}`,
-        visible: true,
-        parameters: cylinderData.parameters,
-        geometry: cylinderData.geometry,
-      });
-      toast.success('Cylinder created', { description: 'Radius: 20mm, Height: 40mm' });
+      if (useMockMode) {
+        const cylinderData = mockCAD.createCylinder(20, 40);
+        addFeature({
+          type: 'sketch',
+          name: `Cylinder ${features.filter(f => f.type === 'sketch').length + 1}`,
+          visible: true,
+          parameters: cylinderData.parameters,
+          geometry: cylinderData.geometry,
+        });
+        toast.success('Cylinder created', { description: 'Radius: 20mm, Height: 40mm' });
+      } else {
+        setCylinderDialogOpen(true);
+      }
     } else if (action === 'add-sphere') {
-      const sphereData = mockCAD.createSphere(25);
-      addFeature({
-        type: 'sketch',
-        name: `Sphere ${features.filter(f => f.type === 'sketch').length + 1}`,
-        visible: true,
-        parameters: sphereData.parameters,
-        geometry: sphereData.geometry,
-      });
-      toast.success('Sphere created', { description: 'Radius: 25mm' });
+      if (useMockMode) {
+        const sphereData = mockCAD.createSphere(25);
+        addFeature({
+          type: 'sketch',
+          name: `Sphere ${features.filter(f => f.type === 'sketch').length + 1}`,
+          visible: true,
+          parameters: sphereData.parameters,
+          geometry: sphereData.geometry,
+        });
+        toast.success('Sphere created', { description: 'Radius: 25mm' });
+      } else {
+        setSphereDialogOpen(true);
+      }
     }
 
     // Handle operations
@@ -280,6 +304,23 @@ function CADEditorContent() {
 
   return (
     <div className="h-screen flex flex-col bg-slate-900 text-white">
+      {/* Parameter Dialogs */}
+      <BoxDialog
+        open={boxDialogOpen}
+        onOpenChange={setBoxDialogOpen}
+        onConfirm={(width, height, depth) => createBox(width, height, depth)}
+      />
+      <CylinderDialog
+        open={cylinderDialogOpen}
+        onOpenChange={setCylinderDialogOpen}
+        onConfirm={(radius, height) => createCylinder(radius, height)}
+      />
+      <SphereDialog
+        open={sphereDialogOpen}
+        onOpenChange={setSphereDialogOpen}
+        onConfirm={(radius) => createSphere(radius)}
+      />
+
       {/* Project Header */}
       <div className="h-12 border-b border-gray-700 bg-slate-950 flex items-center px-4 gap-4">
         <Link href="/projects">
@@ -293,6 +334,7 @@ function CADEditorContent() {
         {project.description && (
           <span className="text-sm text-gray-500">· {project.description}</span>
         )}
+        {isLoading && <span className="text-sm text-gray-400">Creating geometry...</span>}
       </div>
 
       {/* Toolbar */}

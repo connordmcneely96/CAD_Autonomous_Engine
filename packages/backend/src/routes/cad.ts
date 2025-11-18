@@ -37,7 +37,7 @@ export async function cadRoutes(fastify: FastifyInstance) {
    *   "position": { "x": 0, "y": 0, "z": 0 }
    * }
    */
-  fastify.post('/primitives/box', async (_request, reply) => {
+  fastify.post('/primitives/box', async (request, reply) => {
     try {
       const input = CreateBoxSchema.parse(request.body);
       const result = await cadService.createBox(input);
@@ -60,7 +60,7 @@ export async function cadRoutes(fastify: FastifyInstance) {
    *   "position": { "x": 0, "y": 0, "z": 0 }
    * }
    */
-  fastify.post('/primitives/cylinder', async (_request, reply) => {
+  fastify.post('/primitives/cylinder', async (request, reply) => {
     try {
       const input = CreateCylinderSchema.parse(request.body);
       const result = await cadService.createCylinder(input);
@@ -82,7 +82,7 @@ export async function cadRoutes(fastify: FastifyInstance) {
    *   "position": { "x": 0, "y": 0, "z": 0 }
    * }
    */
-  fastify.post('/primitives/sphere', async (_request, reply) => {
+  fastify.post('/primitives/sphere', async (request, reply) => {
     try {
       const input = CreateSphereSchema.parse(request.body);
       const result = await cadService.createSphere(input);
@@ -105,7 +105,7 @@ export async function cadRoutes(fastify: FastifyInstance) {
    *   "direction": "normal"
    * }
    */
-  fastify.post('/operations/extrude', async (_request, reply) => {
+  fastify.post('/operations/extrude', async (request, reply) => {
     try {
       const input = ExtrudeSchema.parse(request.body);
       const result = await cadService.extrude(input);
@@ -128,7 +128,7 @@ export async function cadRoutes(fastify: FastifyInstance) {
    *   "cutType": "through"
    * }
    */
-  fastify.post('/operations/cut', async (_request, reply) => {
+  fastify.post('/operations/cut', async (request, reply) => {
     try {
       const input = CutSchema.parse(request.body);
       const result = await cadService.cut(input);
@@ -150,7 +150,7 @@ export async function cadRoutes(fastify: FastifyInstance) {
    *   "radius": 2
    * }
    */
-  fastify.post('/operations/fillet', async (_request, reply) => {
+  fastify.post('/operations/fillet', async (request, reply) => {
     try {
       const input = FilletSchema.parse(request.body);
       const result = await cadService.fillet(input);
@@ -173,7 +173,7 @@ export async function cadRoutes(fastify: FastifyInstance) {
    *   "angle": 45
    * }
    */
-  fastify.post('/operations/chamfer', async (_request, reply) => {
+  fastify.post('/operations/chamfer', async (request, reply) => {
     try {
       const input = ChamferSchema.parse(request.body);
       const result = await cadService.chamfer(input);
@@ -199,7 +199,7 @@ export async function cadRoutes(fastify: FastifyInstance) {
    *   }
    * }
    */
-  fastify.post('/export', async (_request, reply) => {
+  fastify.post('/export', async (request, reply) => {
     try {
       const input = ExportSchema.parse(request.body);
       const result = await cadService.export(input);
