@@ -1,13 +1,23 @@
+const path = require('path');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   transpilePackages: ['three'],
-  webpack: (config) => {
+  webpack: (config, { isServer }) => {
+    // Add @ alias resolution for webpack
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': path.resolve(__dirname, 'src'),
+    };
+
+    // External dependencies
     config.externals.push({
       'utf-8-validate': 'commonjs utf-8-validate',
       bufferutil: 'commonjs bufferutil',
     });
+
     return config;
   },
   env: {
