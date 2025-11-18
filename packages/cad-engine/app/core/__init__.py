@@ -1,0 +1,1 @@
+"""Core CAD processing functionality."""

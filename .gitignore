@@ -1,0 +1,109 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Testing
+coverage/
+*.coverage
+.nyc_output
+.pytest_cache/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Production
+build/
+dist/
+.next/
+out/
+*.egg-info/
+*.egg
+
+# Environment variables
+.env
+.env*.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+
+# Keep example env files
+!.env.example
+!.env*.example
+
+# Python virtual environments
+venv/
+env/
+ENV/
+.venv/
+*.venv
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+pip-log.txt
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+.parcel-cache/
+
+# Docker
+.docker/
+
+# TypeScript
+*.tsbuildinfo
+.tsbuildinfo
+
+# Misc
+.turbo
+.vercel
+*.pem
+
+# CAD specific
+*.stl
+*.step
+*.stp
+*.iges
+*.igs
+*.brep
+*.obj
+!examples/**/*.stl
+!examples/**/*.step
+
+# AI/ML models (large files)
+*.pt
+*.pth
+*.h5
+*.pkl
+*.joblib
+!models/.gitkeep
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Redis dump
+dump.rdb
