@@ -117,6 +117,16 @@ export const useProjectsStore = create<ProjectsState>()(
     }),
     {
       name: 'cad-projects-storage',
+      // Fix Date serialization - convert strings back to Date objects
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.projects = state.projects.map((p) => ({
+            ...p,
+            createdAt: new Date(p.createdAt),
+            updatedAt: new Date(p.updatedAt),
+          }));
+        }
+      },
     }
   )
 );

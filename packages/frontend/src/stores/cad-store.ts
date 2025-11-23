@@ -68,46 +68,9 @@ const DEFAULT_CAMERA: CameraState = {
   target: [0, 0, 0],
 };
 
-// Sample initial features
-const SAMPLE_FEATURES: CADFeature[] = [
-  {
-    id: 'feature-1',
-    type: 'sketch',
-    name: 'Sketch1',
-    visible: true,
-    parameters: {
-      plane: 'XY',
-      offset: 0,
-    },
-  },
-  {
-    id: 'feature-2',
-    type: 'extrude',
-    name: 'Extrude1',
-    visible: true,
-    parameters: {
-      distance: 10,
-      direction: 'normal',
-      operation: 'new',
-    },
-    parentId: 'feature-1',
-  },
-  {
-    id: 'feature-3',
-    type: 'fillet',
-    name: 'Fillet1',
-    visible: true,
-    parameters: {
-      radius: 2,
-      edges: ['edge1', 'edge2'],
-    },
-    parentId: 'feature-2',
-  },
-];
-
 export const useCADStore = create<CADState>((set) => ({
   // Initial State
-  features: SAMPLE_FEATURES,
+  features: [], // Start with no features
   selectedFeatureId: null,
   hoveredFeatureId: null,
   camera: DEFAULT_CAMERA,
