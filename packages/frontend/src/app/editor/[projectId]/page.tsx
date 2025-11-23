@@ -10,7 +10,9 @@ import { PropertiesPanel } from '@/components/cad/PropertiesPanel';
 import { AIChat } from '@/components/ai/AIChat';
 import { BoxDialog, CylinderDialog, SphereDialog } from '@/components/cad/PrimitiveDialogs';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, Sparkles, ArrowLeft } from 'lucide-react';
+import { BottomSheet } from '@/components/ui/bottom-sheet';
+import { MobileTabBar } from '@/components/layout/mobile-tab-bar';
+import { ChevronLeft, Sparkles, ArrowLeft, Wrench, Layers, MessageSquare, Settings } from 'lucide-react';
 import { useCADStore } from '@/stores/cad-store';
 import { useProjectsStore } from '@/stores/projects-store';
 import { useCADOperations } from '@/hooks/useCADOperations';
@@ -37,11 +39,26 @@ function CADEditorContent() {
   const [cylinderDialogOpen, setCylinderDialogOpen] = useState(false);
   const [sphereDialogOpen, setSphereDialogOpen] = useState(false);
 
+  // Mobile state
+  const [mobileActiveTab, setMobileActiveTab] = useState<string | null>(null);
+
   const { addFeature, features, featureTreeWidth, setFeatureTreeWidth } = useCADStore();
   const { isLoading, createBox, createCylinder, createSphere } = useCADOperations();
 
   // Environment variable to toggle between mock and real CAD
   const useMockMode = process.env.NEXT_PUBLIC_USE_MOCK_CAD === 'true';
+
+  // Mobile tabs configuration
+  const mobileTabs = [
+    { id: 'tools', label: 'Tools', icon: <Wrench className="h-5 w-5" /> },
+    { id: 'features', label: 'Features', icon: <Layers className="h-5 w-5" /> },
+    { id: 'ai', label: 'AI', icon: <MessageSquare className="h-5 w-5" /> },
+    { id: 'properties', label: 'Properties', icon: <Settings className="h-5 w-5" /> },
+  ];
+
+  const handleMobileTabChange = (tabId: string) => {
+    setMobileActiveTab(mobileActiveTab === tabId ? null : tabId);
+  };
 
   const handleToolbarAction = (action: string) => {
     // Handle primitive additions
@@ -407,6 +424,84 @@ function CADEditorContent() {
           </div>
         )}
       </div>
+
+      {/* Mobile Tab Bar */}
+      <MobileTabBar
+        tabs={mobileTabs}
+        activeTab={mobileActiveTab || ''}
+        onTabChange={handleMobileTabChange}
+      />
+
+      {/* Mobile Bottom Sheets */}
+      <BottomSheet
+        open={mobileActiveTab === 'tools'}
+        onClose={() => setMobileActiveTab(null)}
+        title="Tools"
+      >
+        <div className="grid grid-cols-4 gap-4">
+          <button
+            onClick={() => {
+              handleToolbarAction('add-box');
+              setMobileActiveTab(null);
+            }}
+            className="flex flex-col items-center gap-2 p-4 rounded-lg bg-slate-800 active:bg-slate-700"
+          >
+            <div className="w-10 h-10 flex items-center justify-center bg-indigo-600 rounded-lg">
+              <Wrench className="h-5 w-5 text-white" />
+            </div>
+            <span className="text-xs">Box</span>
+          </button>
+          <button
+            onClick={() => {
+              handleToolbarAction('add-cylinder');
+              setMobileActiveTab(null);
+            }}
+            className="flex flex-col items-center gap-2 p-4 rounded-lg bg-slate-800 active:bg-slate-700"
+          >
+            <div className="w-10 h-10 flex items-center justify-center bg-indigo-600 rounded-lg">
+              <Wrench className="h-5 w-5 text-white" />
+            </div>
+            <span className="text-xs">Cylinder</span>
+          </button>
+          <button
+            onClick={() => {
+              handleToolbarAction('add-sphere');
+              setMobileActiveTab(null);
+            }}
+            className="flex flex-col items-center gap-2 p-4 rounded-lg bg-slate-800 active:bg-slate-700"
+          >
+            <div className="w-10 h-10 flex items-center justify-center bg-indigo-600 rounded-lg">
+              <Wrench className="h-5 w-5 text-white" />
+            </div>
+            <span className="text-xs">Sphere</span>
+          </button>
+        </div>
+      </BottomSheet>
+
+      <BottomSheet
+        open={mobileActiveTab === 'features'}
+        onClose={() => setMobileActiveTab(null)}
+        title="Features"
+      >
+        <FeatureTree />
+      </BottomSheet>
+
+      <BottomSheet
+        open={mobileActiveTab === 'ai'}
+        onClose={() => setMobileActiveTab(null)}
+        title="AI Assistant"
+        snapPoints={['75%']}
+      >
+        <AIChat projectId={projectId} onCommandExecuted={handleAICommand} />
+      </BottomSheet>
+
+      <BottomSheet
+        open={mobileActiveTab === 'properties'}
+        onClose={() => setMobileActiveTab(null)}
+        title="Properties"
+      >
+        <PropertiesPanel />
+      </BottomSheet>
     </div>
   );
 }

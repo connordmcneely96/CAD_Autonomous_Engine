@@ -113,7 +113,7 @@ export function Viewport({ showStats = process.env.NODE_ENV === 'development' }:
   const controlsRef = useRef<any>();
 
   return (
-    <div className="w-full h-full bg-gradient-to-b from-slate-800 to-slate-900">
+    <div className="w-full h-full bg-gradient-to-b from-slate-800 to-slate-900 touch-none">
       <Canvas
         shadows
         gl={{
@@ -121,6 +121,7 @@ export function Viewport({ showStats = process.env.NODE_ENV === 'development' }:
           toneMapping: THREE.ACESFilmicToneMapping,
           toneMappingExposure: 1.2,
         }}
+        style={{ touchAction: 'none' }}
       >
         {/* Camera */}
         <PerspectiveCamera makeDefault position={[10, 10, 10]} fov={50} />
@@ -169,7 +170,7 @@ export function Viewport({ showStats = process.env.NODE_ENV === 'development' }:
         {/* CAD geometry from store */}
         <CADScene />
 
-        {/* Controls */}
+        {/* Controls - optimized for touch */}
         <OrbitControls
           ref={controlsRef}
           makeDefault
@@ -178,6 +179,15 @@ export function Viewport({ showStats = process.env.NODE_ENV === 'development' }:
           minDistance={5}
           maxDistance={100}
           maxPolarAngle={Math.PI / 2}
+          // Touch settings
+          touches={{
+            ONE: THREE.TOUCH.ROTATE,
+            TWO: THREE.TOUCH.DOLLY_PAN,
+          }}
+          // Increase rotation speed for touch
+          rotateSpeed={0.8}
+          panSpeed={0.8}
+          zoomSpeed={1.2}
         />
 
         {/* Performance stats */}
@@ -185,10 +195,14 @@ export function Viewport({ showStats = process.env.NODE_ENV === 'development' }:
       </Canvas>
 
       {/* Viewport info overlay */}
-      <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-sm px-3 py-2 rounded-lg text-xs text-white font-mono">
+      <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-sm px-3 py-2 rounded-lg text-xs text-white font-mono hidden sm:block">
         <div>Camera: Perspective</div>
         <div>View: Isometric</div>
         <div className="text-gray-400 mt-1">Scroll: Zoom | Drag: Rotate | Right-drag: Pan</div>
+      </div>
+      {/* Mobile touch controls hint */}
+      <div className="absolute bottom-20 left-4 right-4 bg-black/50 backdrop-blur-sm px-3 py-2 rounded-lg text-xs text-white font-mono sm:hidden text-center">
+        <div className="text-gray-400">1 finger: Rotate | 2 fingers: Zoom & Pan</div>
       </div>
     </div>
   );
