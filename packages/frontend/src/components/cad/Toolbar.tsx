@@ -38,7 +38,7 @@ export function Toolbar({ onAction }: ToolbarProps) {
 
   return (
     <TooltipProvider delayDuration={300}>
-      <div className="h-14 border-b border-gray-700 bg-slate-900 flex items-center px-4 gap-2">
+      <div className="h-14 border-b border-gray-700 bg-slate-900 flex items-center px-2 sm:px-4 gap-2 overflow-x-auto scrollbar-hide">
         {/* File Menu */}
         <div className="flex items-center gap-1">
           <Tooltip>
