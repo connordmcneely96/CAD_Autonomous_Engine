@@ -12,12 +12,14 @@ interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  _hasHydrated: boolean;
 
   // Actions
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string, name: string) => Promise<void>;
   logout: () => void;
   setUser: (user: User | null) => void;
+  setHasHydrated: (state: boolean) => void;
 }
 
 // Mock authentication - replace with real auth later
@@ -55,6 +57,7 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isAuthenticated: false,
       isLoading: false,
+      _hasHydrated: false,
 
       login: async (email: string, password: string) => {
         set({ isLoading: true });
@@ -85,6 +88,10 @@ export const useAuthStore = create<AuthState>()(
       setUser: (user: User | null) => {
         set({ user, isAuthenticated: !!user });
       },
+
+      setHasHydrated: (state: boolean) => {
+        set({ _hasHydrated: state });
+      },
     }),
     {
       name: 'cad-auth-storage',
@@ -92,6 +99,9 @@ export const useAuthStore = create<AuthState>()(
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     }
   )
 );
