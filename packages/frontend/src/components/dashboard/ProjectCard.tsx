@@ -78,13 +78,13 @@ export function ProjectCard({ project }: ProjectCardProps) {
       <CardFooter className="p-4 pt-0 flex items-center justify-between">
         <span className="text-xs text-muted-foreground">{formattedDate}</span>
         <div className="flex gap-1">
-          <Button variant="ghost" size="icon" className="h-8 w-8">
+          <Button variant="ghost" size="icon" className="h-10 w-10 sm:h-8 sm:w-8">
             <Eye className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
+          <Button variant="ghost" size="icon" className="h-10 w-10 sm:h-8 sm:w-8">
             <Edit className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive">
+          <Button variant="ghost" size="icon" className="h-10 w-10 sm:h-8 sm:w-8 text-destructive">
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>

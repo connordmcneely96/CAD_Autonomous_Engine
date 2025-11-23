@@ -322,19 +322,19 @@ function CADEditorContent() {
       />
 
       {/* Project Header */}
-      <div className="h-12 border-b border-gray-700 bg-slate-950 flex items-center px-4 gap-4">
+      <div className="h-12 border-b border-gray-700 bg-slate-950 flex items-center px-2 sm:px-4 gap-2 sm:gap-4">
         <Link href="/projects">
-          <Button variant="ghost" size="sm" className="h-8 gap-2">
+          <Button variant="ghost" size="sm" className="h-8 gap-1 sm:gap-2 px-2 sm:px-3">
             <ArrowLeft className="h-4 w-4" />
-            Projects
+            <span className="hidden sm:inline">Projects</span>
           </Button>
         </Link>
-        <div className="h-4 w-px bg-gray-700" />
-        <h1 className="text-sm font-semibold">{project.name}</h1>
+        <div className="h-4 w-px bg-gray-700 hidden sm:block" />
+        <h1 className="text-xs sm:text-sm font-semibold truncate flex-1 min-w-0">{project.name}</h1>
         {project.description && (
-          <span className="text-sm text-gray-500">· {project.description}</span>
+          <span className="text-sm text-gray-500 hidden lg:inline">· {project.description}</span>
         )}
-        {isLoading && <span className="text-sm text-gray-400">Creating geometry...</span>}
+        {isLoading && <span className="text-xs sm:text-sm text-gray-400">Creating...</span>}
       </div>
 
       {/* Toolbar */}
@@ -342,17 +342,17 @@ function CADEditorContent() {
 
       {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Feature Tree Sidebar */}
+        {/* Feature Tree Sidebar - Hidden on mobile */}
         <div
-          className="flex-shrink-0 transition-all duration-300"
+          className="hidden md:block flex-shrink-0 transition-all duration-300"
           style={{ width: `${featureTreeWidth}px` }}
         >
           <FeatureTree />
         </div>
 
-        {/* Resize Handle for Feature Tree */}
+        {/* Resize Handle for Feature Tree - Hidden on mobile */}
         <div
-          className="w-1 bg-gray-700 hover:bg-indigo-500 cursor-col-resize transition-colors"
+          className="hidden md:block w-1 bg-gray-700 hover:bg-indigo-500 cursor-col-resize transition-colors"
           onMouseDown={(e) => {
             const startX = e.clientX;
             const startWidth = featureTreeWidth;
@@ -378,17 +378,19 @@ function CADEditorContent() {
             <Viewport />
           </div>
 
-          {/* Properties Panel */}
-          <PropertiesPanel />
+          {/* Properties Panel - Hidden on mobile */}
+          <div className="hidden sm:block">
+            <PropertiesPanel />
+          </div>
         </div>
 
-        {/* AI Chat Sidebar */}
+        {/* AI Chat Sidebar - Hidden on mobile */}
         {aiSidebarOpen ? (
-          <div className="w-80 flex-shrink-0">
+          <div className="hidden lg:block w-80 flex-shrink-0">
             <AIChat projectId={projectId} onCommandExecuted={handleAICommand} />
           </div>
         ) : (
-          <div className="border-l border-gray-700 flex-shrink-0">
+          <div className="hidden lg:block border-l border-gray-700 flex-shrink-0">
             <Button
               variant="ghost"
               size="sm"
