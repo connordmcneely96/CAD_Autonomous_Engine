@@ -7,9 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ProjectCard } from '@/components/dashboard/ProjectCard';
 import { Plus, Search, Grid, List } from 'lucide-react';
-import { useAuthStore } from '@/stores/auth-store';
 import { useProjectsStore } from '@/stores/projects-store';
 import { AuthGuard } from '@/components/auth/AuthGuard';
+import { useUser } from '@clerk/nextjs';
 import {
   Dialog,
   DialogContent,
@@ -22,7 +22,7 @@ import { toast } from 'sonner';
 
 function ProjectsPageContent() {
   const router = useRouter();
-  const { user } = useAuthStore();
+  const { user } = useUser();
   const { getProjects, createProject } = useProjectsStore();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
@@ -31,7 +31,11 @@ function ProjectsPageContent() {
   const [newProjectDescription, setNewProjectDescription] = useState('');
   const [isCreating, setIsCreating] = useState(false);
 
-  const allProjects = getProjects(user?.id || 'demo-user');
+  const userId = user?.id || 'demo-user';
+  const displayName =
+    user?.fullName || user?.username || user?.primaryEmailAddress?.emailAddress || 'User';
+
+  const allProjects = getProjects(userId);
   const filteredProjects = allProjects.filter((project) =>
     project.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -47,7 +51,7 @@ function ProjectsPageContent() {
       const project = createProject(
         newProjectName,
         newProjectDescription,
-        user?.id || 'demo-user'
+        userId
       );
       toast.success('Project created successfully!');
       setIsCreateDialogOpen(false);
@@ -66,7 +70,7 @@ function ProjectsPageContent() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Welcome, {user?.name || 'User'}!</h1>
+          <h1 className="text-3xl font-bold">Welcome, {displayName}!</h1>
           <p className="text-muted-foreground mt-1">
             Manage and organize your CAD projects
           </p>
