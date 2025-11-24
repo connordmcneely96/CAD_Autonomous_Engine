@@ -56,7 +56,7 @@ apiClient.interceptors.response.use(
     if (status === 401) {
       // Unauthorized - redirect to login
       if (typeof window !== 'undefined') {
-        window.location.href = '/login';
+        window.location.href = '/sign-in';
       }
     }
 

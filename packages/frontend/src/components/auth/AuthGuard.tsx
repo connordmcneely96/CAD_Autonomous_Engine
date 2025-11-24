@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/stores/auth-store';
+import { useUser } from '@clerk/nextjs';
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -10,17 +10,16 @@ interface AuthGuardProps {
 
 export function AuthGuard({ children }: AuthGuardProps) {
   const router = useRouter();
-  const { isAuthenticated, _hasHydrated } = useAuthStore();
+  const { isSignedIn, isLoaded } = useUser();
 
   useEffect(() => {
-    // Only redirect after hydration is complete
-    if (_hasHydrated && !isAuthenticated) {
-      router.push('/login');
+    if (isLoaded && !isSignedIn) {
+      router.push('/sign-in');
     }
-  }, [isAuthenticated, _hasHydrated, router]);
+  }, [isLoaded, isSignedIn, router]);
 
-  // Show loading state until hydration is complete
-  if (!_hasHydrated) {
+  // Show loading state until auth is loaded
+  if (!isLoaded) {
     return (
       <div className="flex h-screen items-center justify-center bg-slate-900">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" />
@@ -29,7 +28,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
   }
 
   // Show nothing if not authenticated (will redirect)
-  if (!isAuthenticated) {
+  if (!isSignedIn) {
     return null;
   }
 
