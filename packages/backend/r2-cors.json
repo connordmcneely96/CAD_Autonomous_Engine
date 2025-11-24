@@ -1,0 +1,9 @@
+[
+  {
+    "AllowedOrigins": ["https://your-frontend.vercel.app"],
+    "AllowedMethods": ["GET", "PUT", "POST", "DELETE"],
+    "AllowedHeaders": ["*"],
+    "ExposeHeaders": ["ETag"],
+    "MaxAgeSeconds": 3000
+  }
+]
