@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Menu, X, Cpu } from 'lucide-react';
@@ -72,12 +73,17 @@ export function Header() {
 
           {/* Desktop Auth Buttons */}
           <div className="hidden lg:flex items-center gap-3">
-            <Button variant="ghost" asChild>
-              <Link href="/login">Log in</Link>
-            </Button>
-            <Button asChild>
-              <Link href="/signup">Get Started</Link>
-            </Button>
+            <SignedIn>
+              <UserButton afterSignOutUrl="/" />
+            </SignedIn>
+            <SignedOut>
+              <Button variant="ghost" asChild>
+                <Link href="/sign-in">Log in</Link>
+              </Button>
+              <Button asChild>
+                <Link href="/sign-up">Get Started</Link>
+              </Button>
+            </SignedOut>
           </div>
 
           {/* Mobile Menu Button */}
@@ -158,23 +164,30 @@ export function Header() {
 
                 {/* Menu Footer - Auth Buttons */}
                 <div className="p-4 border-t border-gray-200 dark:border-gray-800 space-y-3">
-                  <Button
-                    variant="outline"
-                    className="w-full h-12 text-base"
-                    asChild
-                  >
-                    <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
-                      Log in
-                    </Link>
-                  </Button>
-                  <Button
-                    className="w-full h-12 text-base"
-                    asChild
-                  >
-                    <Link href="/signup" onClick={() => setMobileMenuOpen(false)}>
-                      Get Started
-                    </Link>
-                  </Button>
+                  <SignedIn>
+                    <div className="flex justify-center">
+                      <UserButton afterSignOutUrl="/" />
+                    </div>
+                  </SignedIn>
+                  <SignedOut>
+                    <Button
+                      variant="outline"
+                      className="w-full h-12 text-base"
+                      asChild
+                    >
+                      <Link href="/sign-in" onClick={() => setMobileMenuOpen(false)}>
+                        Log in
+                      </Link>
+                    </Button>
+                    <Button
+                      className="w-full h-12 text-base"
+                      asChild
+                    >
+                      <Link href="/sign-up" onClick={() => setMobileMenuOpen(false)}>
+                        Get Started
+                      </Link>
+                    </Button>
+                  </SignedOut>
                 </div>
               </div>
             </motion.div>

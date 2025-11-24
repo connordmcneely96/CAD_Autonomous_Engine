@@ -2,22 +2,21 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useUser } from '@clerk/nextjs';
 import { Sidebar } from '@/components/dashboard/Sidebar';
-import { useAuthStore } from '@/stores/auth-store';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { isAuthenticated, _hasHydrated } = useAuthStore();
+  const { isSignedIn, isLoaded } = useUser();
 
   useEffect(() => {
-    // Only redirect after hydration is complete
-    if (_hasHydrated && !isAuthenticated) {
-      router.push('/login');
+    if (isLoaded && !isSignedIn) {
+      router.push('/sign-in');
     }
-  }, [isAuthenticated, _hasHydrated, router]);
+  }, [isLoaded, isSignedIn, router]);
 
-  // Show loading state until hydration is complete
-  if (!_hasHydrated) {
+  // Show loading state until auth is ready
+  if (!isLoaded) {
     return (
       <div className="flex h-screen items-center justify-center bg-gray-50 dark:bg-gray-950">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" />
@@ -25,7 +24,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     );
   }
 
-  if (!isAuthenticated) {
+  if (!isSignedIn) {
     return null;
   }
 

@@ -1,28 +1,13 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 
-// Simplified middleware for Next.js
-// Auth is handled client-side via AuthGuard since auth state is in localStorage
-export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+const isPublicRoute = createRouteMatcher(['/', '/sign-in(.*)', '/sign-up(.*)']);
 
-  // Redirect root to login page (client-side auth will handle further redirects)
-  if (pathname === '/') {
-    return NextResponse.redirect(new URL('/login', request.url));
-  }
+export default clerkMiddleware(async (auth, req) => {
+  if (isPublicRoute(req)) return;
 
-  return NextResponse.next();
-}
+  await auth.protect();
+});
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
-  ],
+  matcher: ['/((?!.+\\.[\\w]+$|_next).*)', '/', '/(api|trpc)(.*)'],
 };

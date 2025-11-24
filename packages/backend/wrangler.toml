@@ -1,38 +1,17 @@
 name = "cad-engine-backend"
-main = "src/index.ts"
+main = "src/worker.ts"
 compatibility_date = "2024-01-01"
 
-# D1 Database binding
-# After creating your D1 database with: wrangler d1 create cad-engine-db
-# Replace YOUR_DATABASE_ID_HERE with the actual database ID
 [[d1_databases]]
 binding = "DB"
 database_name = "cad-engine-db"
 database_id = "YOUR_DATABASE_ID_HERE"
 
-# R2 Storage binding
-# After creating your R2 bucket with: wrangler r2 bucket create cad-engine-files
 [[r2_buckets]]
 binding = "STORAGE"
 bucket_name = "cad-engine-files"
 
-# Environment variables
 [vars]
 ENVIRONMENT = "production"
-
-# Secrets (set with: wrangler secret put SECRET_NAME)
-# - CLERK_PUBLISHABLE_KEY
-# - CLERK_SECRET_KEY
-
-# Development configuration
-[env.development]
-vars = { ENVIRONMENT = "development" }
-
-# Build configuration
-[build]
-command = "npm run build"
-
-# Routes configuration
-routes = [
-  { pattern = "api.cad-engine.com/*", zone_name = "cad-engine.com" }
-]
+CLERK_PUBLISHABLE_KEY = "YOUR_PUBLISHABLE_KEY"
+CLERK_SECRET_KEY = "YOUR_SECRET_KEY"

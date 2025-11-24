@@ -2,10 +2,10 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useClerk, useUser } from '@clerk/nextjs';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { useAuthStore } from '@/stores/auth-store';
 import { useUIStore } from '@/stores/ui-store';
 import {
   LayoutDashboard,
@@ -26,12 +26,12 @@ const navigation = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { user, logout } = useAuthStore();
+  const { user } = useUser();
+  const { signOut } = useClerk();
   const { sidebarOpen, toggleSidebar } = useUIStore();
 
-  const handleLogout = () => {
-    logout();
-    window.location.href = '/login';
+  const handleLogout = async () => {
+    await signOut({ redirectUrl: '/' });
   };
 
   return (
@@ -93,17 +93,17 @@ export function Sidebar() {
           <div className="p-4 border-t border-gray-200 dark:border-gray-800">
             <div className="flex items-center gap-3 mb-3">
               <Avatar>
-                <AvatarImage src={user?.avatarUrl} alt={user?.name} />
+                <AvatarImage src={user?.imageUrl || undefined} alt={user?.fullName || undefined} />
                 <AvatarFallback>
-                  {user?.name?.charAt(0).toUpperCase() || 'U'}
+                  {user?.fullName?.charAt(0).toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                  {user?.name || 'User'}
+                  {user?.fullName || user?.username || 'User'}
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                  {user?.email || 'user@example.com'}
+                  {user?.primaryEmailAddress?.emailAddress || 'user@example.com'}
                 </p>
               </div>
             </div>

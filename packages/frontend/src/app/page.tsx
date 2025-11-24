@@ -47,13 +47,13 @@ export default function Home() {
           </p>
           <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" className="h-12 px-8 text-base" asChild>
-              <Link href="/signup">
+              <Link href="/sign-up">
                 Start Free Trial
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
             <Button size="lg" variant="outline" className="h-12 px-8 text-base" asChild>
-              <Link href="/login">
+              <Link href="/sign-in">
                 Sign In
               </Link>
             </Button>
@@ -98,7 +98,7 @@ export default function Home() {
             Join thousands of engineers using CAD Engine to build the future.
           </p>
           <Button size="lg" className="h-12 px-8 text-base" asChild>
-            <Link href="/signup">
+            <Link href="/sign-up">
               Create Free Account
             </Link>
           </Button>
