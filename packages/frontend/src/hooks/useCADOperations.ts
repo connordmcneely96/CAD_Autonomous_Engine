@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * CAD Operations Hook
  *
