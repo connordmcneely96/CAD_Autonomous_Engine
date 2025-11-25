@@ -27,10 +27,11 @@ Route (app)                         Size     First Load JS
 
 ### Backend (Cloudflare - Ready for Setup)
 - ✅ **Hono API**: Complete REST API with Clerk auth (`src/index.ts`)
+- ✅ **Test Endpoints**: `/health` and `/test-db` for verification
 - ✅ **D1 Schema**: Database schema ready (`schema.sql`)
 - ✅ **Wrangler Config**: `wrangler.toml` configured with Clerk keys
-- ✅ **Setup Scripts**: Automated setup script created
-- ✅ **Documentation**: Comprehensive manual guide
+- ✅ **Automated Setup**: `DEPLOY.sh` script for one-command deployment
+- ✅ **Documentation**: Comprehensive manual guide and quick start
 
 ### CAD Engine
 - ✅ **OpenCascade Kernel**: Production-grade CAD engine
@@ -39,6 +40,8 @@ Route (app)                         Size     First Load JS
 - ✅ **Documentation**: Complete README with examples
 
 ### Documentation
+- ✅ **QUICKSTART.md**: Fast-track deployment guide (NEW!)
+- ✅ **DEPLOY.sh**: Automated backend deployment script (NEW!)
 - ✅ **DEPLOYMENT_GUIDE.md**: Vercel deployment instructions
 - ✅ **CLOUDFLARE_SETUP.md**: D1/R2/Workers setup
 - ✅ **CLOUDFLARE_SETUP_MANUAL.md**: Step-by-step manual guide
@@ -263,28 +266,50 @@ Dashboard: https://vercel.com/dashboard
 
 ## 🎯 NEXT ACTIONS
 
-**Priority 1: Deploy Frontend**
-1. Go to Vercel Dashboard
-2. Import project
-3. Add environment variables
-4. Deploy
+### ⚡ Quick Start (30 minutes total)
 
-**Priority 2: Set Up Cloudflare**
-1. Run `wrangler login`
-2. Create D1 database
-3. Apply schema
-4. Create R2 bucket
-5. Deploy worker
+**NEW: Automated Deployment Script Available!**
 
-**Priority 3: Connect Services**
-1. Update Clerk allowed origins
-2. Update frontend API URL
-3. Update backend CORS
-4. Test end-to-end
+See **`QUICKSTART.md`** for the fastest deployment path.
+
+**Priority 1: Deploy Backend (5 minutes)** ← START HERE
+```bash
+cd packages/backend
+wrangler login  # Opens browser to authenticate
+./DEPLOY.sh     # Automated setup script
+```
+
+This script will:
+- ✅ Create D1 database and update wrangler.toml
+- ✅ Apply schema (users, projects, versions, features tables)
+- ✅ Create R2 bucket (cad-engine-files)
+- ✅ Set Clerk secret key
+- ✅ Deploy Worker to Cloudflare
+- ✅ Test endpoints
+- 📝 Provide your Worker URL
+
+**Priority 2: Deploy Frontend (10 minutes)**
+1. Go to Vercel Dashboard: https://vercel.com/dashboard
+2. Import `CAD_Autonomous_Engine` repository
+3. Configure monorepo build settings (see QUICKSTART.md)
+4. Add all environment variables (including Worker URL from Priority 1)
+5. Deploy
+
+**Priority 3: Connect Services (5 minutes)**
+1. Update Clerk allowed origins with your Vercel URL
+2. Update backend CORS with your Vercel URL (packages/backend/src/index.ts line 29)
+3. Redeploy backend: `wrangler deploy`
+
+**Priority 4: Test (10 minutes)**
+- Test backend: `curl [WORKER_URL]/health`
+- Test database: `curl [WORKER_URL]/test-db`
+- Test frontend: Visit your Vercel URL
+- Test auth: Sign up and create a project
+- Verify no console errors
 
 **Optional: Deploy CAD Engine**
-1. Deploy to Railway/Fly.io
-2. Update frontend env
+1. Deploy to Railway/Fly.io (see packages/cad-engine/README.md)
+2. Update frontend env with CAD engine URL
 3. Test CAD operations
 
 ---
