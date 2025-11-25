@@ -1,15 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth, useUser } from '@clerk/nextjs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ProjectCard } from '@/components/dashboard/ProjectCard';
-import { Plus, Search, Grid, List } from 'lucide-react';
-import { useProjectsStore } from '@/stores/projects-store';
+import { Plus, Search, Grid, List, Loader2 } from 'lucide-react';
 import { AuthGuard } from '@/components/auth/AuthGuard';
-import { useUser } from '@clerk/nextjs';
 import {
   Dialog,
   DialogContent,
@@ -19,11 +17,24 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import { api } from '@/lib/api';
+
+interface Project {
+  id: string;
+  name: string;
+  description: string;
+  created_at: number;
+  updated_at: number;
+  thumbnail_url?: string;
+}
 
 function ProjectsPageContent() {
   const router = useRouter();
   const { user } = useUser();
-  const { getProjects, createProject } = useProjectsStore();
+  const { getToken } = useAuth();
+
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -31,14 +42,32 @@ function ProjectsPageContent() {
   const [newProjectDescription, setNewProjectDescription] = useState('');
   const [isCreating, setIsCreating] = useState(false);
 
-  const userId = user?.id || 'demo-user';
   const displayName =
     user?.fullName || user?.username || user?.primaryEmailAddress?.emailAddress || 'User';
 
-  const allProjects = getProjects(userId);
-  const filteredProjects = allProjects.filter((project) =>
-    project.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Load projects on mount
+  useEffect(() => {
+    loadProjects();
+  }, []);
+
+  async function loadProjects() {
+    try {
+      setLoading(true);
+      const token = await getToken();
+      if (!token) {
+        toast.error('Not authenticated');
+        return;
+      }
+
+      const data = await api.projects.list(token);
+      setProjects(data.projects || []);
+    } catch (error: any) {
+      console.error('Failed to load projects:', error);
+      toast.error(error.message || 'Failed to load projects');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const handleCreateProject = async () => {
     if (!newProjectName.trim()) {
@@ -48,22 +77,71 @@ function ProjectsPageContent() {
 
     setIsCreating(true);
     try {
-      const project = createProject(
-        newProjectName,
-        newProjectDescription,
-        userId
+      const token = await getToken();
+      if (!token) {
+        toast.error('Not authenticated');
+        return;
+      }
+
+      const project = await api.projects.create(
+        {
+          name: newProjectName,
+          description: newProjectDescription,
+        },
+        token
       );
+
       toast.success('Project created successfully!');
       setIsCreateDialogOpen(false);
       setNewProjectName('');
       setNewProjectDescription('');
+
+      // Reload projects to show the new one
+      await loadProjects();
+
+      // Navigate to editor
       router.push(`/editor/${project.id}`);
-    } catch (error) {
-      toast.error('Failed to create project');
+    } catch (error: any) {
+      console.error('Failed to create project:', error);
+      toast.error(error.message || 'Failed to create project');
     } finally {
       setIsCreating(false);
     }
   };
+
+  const handleDeleteProject = async (id: string, name: string) => {
+    if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+
+    try {
+      const token = await getToken();
+      if (!token) {
+        toast.error('Not authenticated');
+        return;
+      }
+
+      await api.projects.delete(id, token);
+      toast.success('Project deleted');
+      await loadProjects();
+    } catch (error: any) {
+      console.error('Failed to delete project:', error);
+      toast.error(error.message || 'Failed to delete project');
+    }
+  };
+
+  const filteredProjects = projects.filter((project) =>
+    project.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary mb-4" />
+          <p className="text-muted-foreground">Loading projects...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -148,13 +226,39 @@ function ProjectsPageContent() {
           }
         >
           {filteredProjects.map((project) => (
-            <ProjectCard
+            <div
               key={project.id}
-              project={{
-                ...project,
-                updatedAt: project.updatedAt.toISOString(),
-              }}
-            />
+              className="bg-card rounded-lg border p-6 hover:shadow-lg transition-shadow"
+            >
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex-1">
+                  <h3 className="font-semibold text-lg mb-1">{project.name}</h3>
+                  <p className="text-sm text-muted-foreground line-clamp-2">
+                    {project.description || 'No description'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="text-xs text-muted-foreground mb-4">
+                Updated {new Date(project.updated_at * 1000).toLocaleDateString()}
+              </div>
+
+              <div className="flex gap-2">
+                <Button
+                  className="flex-1"
+                  onClick={() => router.push(`/editor/${project.id}`)}
+                >
+                  Open
+                </Button>
+                <Button
+                  variant="outline"
+                  className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                  onClick={() => handleDeleteProject(project.id, project.name)}
+                >
+                  Delete
+                </Button>
+              </div>
+            </div>
           ))}
         </div>
       )}
@@ -203,7 +307,14 @@ function ProjectsPageContent() {
               Cancel
             </Button>
             <Button onClick={handleCreateProject} disabled={isCreating}>
-              {isCreating ? 'Creating...' : 'Create Project'}
+              {isCreating ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                'Create Project'
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
