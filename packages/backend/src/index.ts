@@ -26,12 +26,10 @@ const app = new Hono<{ Bindings: Bindings }>()
 
 // CORS middleware
 app.use('*', cors({
-  origin: ['http://localhost:3000', 'https://your-frontend.vercel.app'],
-  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowHeaders: ['Content-Type', 'Authorization'],
-  exposeHeaders: ['Content-Length'],
-  maxAge: 86400,
+  origin: (origin) => origin, // Allow all origins for now
   credentials: true,
+  allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowHeaders: ['Content-Type', 'Authorization'],
 }))
 
 // Clerk authentication middleware
@@ -44,6 +42,16 @@ app.get('/health', (c) => {
     timestamp: new Date().toISOString(),
     environment: c.env.ENVIRONMENT,
   })
+})
+
+// Test database connection
+app.get('/test-db', async (c) => {
+  try {
+    const result = await c.env.DB.prepare('SELECT 1 as test').first()
+    return c.json({ success: true, result })
+  } catch (error: any) {
+    return c.json({ success: false, error: error.message }, 500)
+  }
 })
 
 // ========================================
