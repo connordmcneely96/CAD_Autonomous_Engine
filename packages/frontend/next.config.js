@@ -10,12 +10,15 @@ const nextConfig = {
   // Allow build to succeed even without Clerk keys
   experimental: {
     missingSuspenseWithCSRBailout: false,
+    outputFileTracingIncludes: {
+      '/': ['./node_modules/**/*.wasm', './node_modules/**/*.node'],
+    },
   },
   eslint: {
     ignoreDuringBuilds: true, // Ignore ESLint errors during build
   },
   typescript: {
-    ignoreBuildErrors: true, // Ignore TypeScript errors during build (temporary)
+    ignoreBuildErrors: false, // Re-enable TypeScript checking
   },
   webpack: (config, { isServer }) => {
     // Add @ alias resolution for webpack
@@ -37,11 +40,11 @@ const nextConfig = {
     NEXT_PUBLIC_CAD_ENGINE_URL: process.env.NEXT_PUBLIC_CAD_ENGINE_URL || 'http://localhost:8000',
     NEXT_PUBLIC_AI_SERVICE_URL:
       process.env.NEXT_PUBLIC_AI_SERVICE_URL || 'http://localhost:8001',
-    // Provide placeholder Clerk keys for build if not set
-    // These are obviously fake placeholders and should be replaced with real keys in production
+    // Clerk keys MUST be set in Vercel environment variables
+    // Use simple fake keys for fallback: pk_test_BUILD_ONLY and sk_test_BUILD_ONLY
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
-      process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || 'pk_test_PLACEHOLDER_KEY_FOR_BUILD_ONLY',
-    CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY || 'sk_test_PLACEHOLDER_KEY_FOR_BUILD_ONLY',
+      process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || 'pk_test_BUILD_ONLY',
+    CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY || 'sk_test_BUILD_ONLY',
   },
 };
 
