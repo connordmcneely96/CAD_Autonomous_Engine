@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.api.health import router as health_router
 from app.routes.ai_routes import router as ai_router
+from app.routes.design_routes import router as design_router
 
 # Configure logging
 logging.basicConfig(
@@ -58,6 +59,7 @@ app.add_middleware(
 # Register routers
 app.include_router(health_router, tags=["health"])
 app.include_router(ai_router)
+app.include_router(design_router)
 
 
 @app.get("/")
@@ -73,6 +75,9 @@ async def root() -> dict:
             "ai_examples": "/ai/examples",
             "ai_status": "/ai/status",
             "knowledge_search": "/ai/knowledge/search",
+            "design_shaft": "/design/shaft",
+            "analyze_shaft": "/design/shaft/analyze",
+            "design_examples": "/design/shaft/examples",
         },
     }
 
