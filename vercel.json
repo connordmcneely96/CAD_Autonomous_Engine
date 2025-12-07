@@ -2,8 +2,11 @@
   "version": 2,
   "buildCommand": "cd packages/frontend && pnpm build",
   "devCommand": "cd packages/frontend && pnpm dev",
-  "installCommand": "pnpm install --no-frozen-lockfile",
+  "installCommand": "pnpm install --frozen-lockfile",
   "outputDirectory": "packages/frontend/.next",
   "framework": null,
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./packages/frontend"
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./packages/frontend",
+  "env": {
+    "ENABLE_EXPERIMENTAL_COREPACK": "1"
+  }
 }
