@@ -5,8 +5,10 @@ import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import { Sidebar } from '@/components/dashboard/Sidebar';
 
-// Force dynamic rendering - don't prerender at build time
+// Force dynamic rendering - completely disable static optimization
 export const dynamic = 'force-dynamic';
+export const dynamicParams = true;
+export const revalidate = 0;
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
