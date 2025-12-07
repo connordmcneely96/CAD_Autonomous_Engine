@@ -2,8 +2,10 @@
 
 import { SignUp } from '@clerk/nextjs';
 
-// Force dynamic rendering - don't prerender at build time
+// Force dynamic rendering - completely disable static optimization
 export const dynamic = 'force-dynamic';
+export const dynamicParams = true;
+export const revalidate = 0;
 
 export default function SignUpPage() {
   return (

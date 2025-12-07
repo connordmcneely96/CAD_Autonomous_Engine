@@ -5,8 +5,11 @@ import { useRouter } from 'next/navigation';
 import { useAuth, useUser } from '@clerk/nextjs';
 import { Button } from '@/components/ui/button';
 
-// Force dynamic rendering - don't prerender at build time
+// Force dynamic rendering - completely disable static optimization
 export const dynamic = 'force-dynamic';
+export const dynamicParams = true;
+export const revalidate = 0;
+
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Plus, Search, Grid, List, Loader2 } from 'lucide-react';
